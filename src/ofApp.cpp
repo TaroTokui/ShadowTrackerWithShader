@@ -34,6 +34,11 @@ void ofApp::setup() {
 	shadow_fbo.allocate(CAMERA_W, CAMERA_H);
 	heatmap_fbo.allocate(CAMERA_W, CAMERA_H);
 	src_fbo.allocate(CAMERA_W, CAMERA_H);
+	blur_fbo.allocate(CAMERA_W, CAMERA_H);
+	prev_fbo.allocate(CAMERA_W, CAMERA_H);
+	prev_fbo.begin();
+	ofBackground(0);
+	prev_fbo.end();
 
 	// spout settings
 	//sender.init("shadow");
@@ -50,8 +55,10 @@ void ofApp::setup() {
 	// gui
 	gui_params.setName("parameters");
 	gui_params.add(showMapper.set("showMapper", true));
-	gui_params.add(binarize_threshold.set("bin thresh", 20, 0, 255));
+	gui_params.add(binarize_threshold.set("bin thresh", 0, -1.0, 1.0));
 	gui_params.add(subtract_threshold.set("sub thresh", 0, -1.0, 1.0));
+	gui_params.add(increaseParam.set("increase", 0.02, 0.0, 0.2));
+	gui_params.add(decreaseParam.set("decrease", 0.1, 0.0, 1.0));
 	gui.setup(gui_params);
 	gui.loadFromFile("settings.xml");
 	showGui = true;
@@ -64,16 +71,16 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	// grab new frame
+	// grab new frame, 15~20ms
 	pgr_camera->grab_image();
 
-	// draw to mapper fbo
+	// draw to mapper fbo, 1ms
 	mapper_fbo.begin();
 	ofBackground(0);
 	pgr_camera->draw(0, 0);
 	mapper_fbo.end();
 
-	// reshape fbo
+	// reshape fbo, 1ms
 	src_fbo.begin();
 	bezManager.draw();
 	src_fbo.end();
@@ -96,7 +103,7 @@ void ofApp::update() {
 		}
 	}
 
-	// subtract
+	// subtract, 1ms
 	shadow_fbo.begin();
 	subtract.begin();
 	subtract.setUniformTexture("bgTex", bg_fbo, 1);
@@ -106,16 +113,36 @@ void ofApp::update() {
 	shadow_fbo.end();
 
 	// blur
+	blur_fbo.begin();
+	gaussianBlur.begin();
+	gaussianBlur.setUniform1i("size", 3);
+	gaussianBlur.setUniform1f("sigma", 1.0);
+	shadow_fbo.draw(0, 0);
+	gaussianBlur.end();
+	blur_fbo.end();
 
-
-	// --------------------
-	// shader
-	// src - bg
-	// blur
 	// binarize
-	// erode
-	// dilade
-	// --------------------
+	shadow_fbo.begin();
+	binarize.begin();
+	binarize.setUniform1f("threshold", binarize_threshold);
+	blur_fbo.draw(0, 0);
+	binarize.end();
+	shadow_fbo.end();
+
+	// update heatmap
+	heatmap_fbo.begin();
+	heatmap.begin();
+	heatmap.setUniformTexture("preTex", prev_fbo.getTexture(), 1);
+	heatmap.setUniform1f("increaseParam", increaseParam);
+	heatmap.setUniform1f("decreaseParam", decreaseParam);
+	shadow_fbo.draw(0, 0);
+	heatmap.end();
+	heatmap_fbo.end();
+
+	// copy buffer
+	prev_fbo.begin();
+	heatmap_fbo.draw(0, 0);
+	prev_fbo.end();
 
 	// draw to spout fbo
 	//shadow_fbo.begin();
@@ -124,63 +151,9 @@ void ofApp::update() {
 	//shadow_fbo.end();
 
 	// send image
-	spout1.send(shadow_fbo.getTexture());
-	spout2.send(heatmap_fbo.getTexture());
+	spout1.send(shadow_fbo.getTexture());	// 3ms
+	spout2.send(heatmap_fbo.getTexture());	// 3ms
 
-#if 0
-	unsigned long long start_time = ofGetElapsedTimeMillis();
-	pgr_camera->grab_image();
-
-	// copy src image
-	src_img = pgr_camera->getImageMat();
-
-	// grab background image
-	if (grabBG)
-	{
-		bg_img = src_img.clone();
-		grabBG = false;
-	}
-
-	// subtraction
-	diff_img = -src_img + bg_img;
-
-	// noise reduction
-	GaussianBlur(diff_img, blur_img, cv::Size(3, 3), 0);
-
-	// binarize
-	threshold(blur_img, binarized_img, binarize_threshold, 255, THRESH_BINARY);
-
-	// convert to color image
-	// maybe spout accept only color image
-	cvtColor(diff_img, dest_img1, CV_GRAY2BGR);
-	//cvtColor(binarized_img, dest_img2, CV_GRAY2BGR);
-
-	// convert to ofImage
-	bgImage.setFromPixels(binarized_img.data, CAMERA_W, CAMERA_H, OF_IMAGE_GRAYSCALE);
-	bgImage.update();
-	diffImage.setFromPixels(diff_img.data, CAMERA_W, CAMERA_H, OF_IMAGE_GRAYSCALE);
-	diffImage.update();
-	destImage1.setFromPixels(dest_img1.data, CAMERA_W, CAMERA_H, OF_IMAGE_COLOR);
-	destImage1.update();
-	destImage2.setFromPixels(dest_img2.data, CAMERA_W, CAMERA_H, OF_IMAGE_COLOR);
-	destImage2.update();
-
-	// update mapper fbo
-	mapper_fbo.begin();
-	ofBackground(0);
-	destImage2.draw(0, 0, CAMERA_W, CAMERA_H);
-	mapper_fbo.end();
-
-	// update spout fbo
-	spout_fbo.begin();
-	ofBackground(0);
-	bezManager.draw();
-	spout_fbo.end();
-
-
-	sender.send(destImage2.getTexture());
-	cout << "time = " << ofGetElapsedTimeMillis() - start_time << endl;
-#endif
 }
 
 //--------------------------------------------------------------
@@ -201,10 +174,7 @@ void ofApp::draw() {
 	shadow_fbo.draw(w, 0, w, h);
 
 	// heatmap image(spout 2)
-	//ofPushMatrix();
-	//ofTranslate(w, h);
-	//bezManager.draw();
-	//ofPopMatrix();
+	heatmap_fbo.draw(w, h, w, h);
 
 
 	//destImage2.draw(0, CAMERA_H / 2, CAMERA_W / 2, CAMERA_H / 2);
@@ -331,5 +301,6 @@ void ofApp::reloadShader()
 	binarize.load("", "shaders/binarize.frag");
 	smoothBG.load("", "shaders/smooth.frag");
 	heatmap.load("", "shaders/heatmap.frag");
+	gaussianBlur.load("", "shaders/gaussianBlur.frag");
 	cout << "shader loaded." << endl;
 }

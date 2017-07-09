@@ -68,7 +68,7 @@ private:
 	// spout
 	ofxSpout::Sender spout1;
 	ofxSpout::Sender spout2;
-	ofFbo shadow_fbo, heatmap_fbo, src_fbo;
+	ofFbo shadow_fbo, heatmap_fbo, src_fbo, blur_fbo, prev_fbo;
 
 	// mapper
 	ofxBezierWarpManager bezManager;
@@ -82,7 +82,7 @@ private:
 	ofShader binarize;
 	ofShader heatmap;
 	ofShader smoothBG;
-	ofVec2f resolution;
+	ofShader gaussianBlur;
 
 	// timer
 	unsigned long long bg_start;

@@ -1,7 +1,6 @@
 #version 120
 uniform float increaseParam;
 uniform float decreaseParam;
-uniform vec2 iResolution;
 uniform sampler2DRect tex0;
 uniform sampler2DRect preTex;
 
