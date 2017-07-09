@@ -1,0 +1,7 @@
+<parameters>
+	<showMapper>0</showMapper>
+	<threshold>20</threshold>
+<parameters/>
+<bin_thresh>20</bin_thresh>
+	<sub_thresh>-0.07</sub_thresh>
+</parameters>
