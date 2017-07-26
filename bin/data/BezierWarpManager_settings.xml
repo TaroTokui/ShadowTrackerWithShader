@@ -1,52 +1,52 @@
 <SCREEN>
-    <IS_BEZIER>0</IS_BEZIER>
+    <IS_BEZIER>1</IS_BEZIER>
     <RESOLUTION>10</RESOLUTION>
     <CORNER>
-        <X>301</X>
-        <Y>178</Y>
+        <X>407</X>
+        <Y>202</Y>
     </CORNER>
     <CORNER>
-        <X>1018</X>
-        <Y>183</Y>
+        <X>1577</X>
+        <Y>157</Y>
     </CORNER>
     <CORNER>
-        <X>1003</X>
-        <Y>574</Y>
+        <X>1639</X>
+        <Y>824</Y>
     </CORNER>
     <CORNER>
-        <X>327</X>
-        <Y>576</Y>
+        <X>402</X>
+        <Y>883</Y>
     </CORNER>
     <ANCHOR>
-        <X>309</X>
-        <Y>310</Y>
+        <X>420</X>
+        <Y>390</Y>
     </ANCHOR>
     <ANCHOR>
-        <X>540</X>
-        <Y>179</Y>
+        <X>757</X>
+        <Y>204</Y>
     </ANCHOR>
     <ANCHOR>
-        <X>779</X>
-        <Y>181</Y>
+        <X>1230</X>
+        <Y>191</Y>
     </ANCHOR>
     <ANCHOR>
-        <X>1013</X>
-        <Y>313</Y>
+        <X>1590</X>
+        <Y>343</Y>
     </ANCHOR>
     <ANCHOR>
-        <X>1008</X>
-        <Y>443</Y>
+        <X>1614</X>
+        <Y>637</Y>
     </ANCHOR>
     <ANCHOR>
-        <X>777</X>
-        <Y>574</Y>
+        <X>1270</X>
+        <Y>831</Y>
     </ANCHOR>
     <ANCHOR>
-        <X>552</X>
-        <Y>575</Y>
+        <X>771</X>
+        <Y>849</Y>
     </ANCHOR>
     <ANCHOR>
-        <X>318</X>
-        <Y>443</Y>
+        <X>410</X>
+        <Y>693</Y>
     </ANCHOR>
 </SCREEN>

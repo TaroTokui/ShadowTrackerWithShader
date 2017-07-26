@@ -13,6 +13,7 @@ void main(void)
     vec2 offset;
     vec3 col = vec3(0.0);
 
+    float sigma2 = 1.0 / (2.0 * sigma * sigma);
        
     float sum = 0.0;
     for(j = 0; j < size; j++)
@@ -22,7 +23,7 @@ void main(void)
         {
             m = -s0 + i;
             offset = vec2(i, j) ;
-            weight = exp(-float(m*m + n*n) / (2.0 * sigma * sigma));
+            weight = exp(-float(m*m + n*n) * sigma2);
             sum += weight;
             col += texture2DRect(tex0, pos + offset).rgb * weight;            
         }
